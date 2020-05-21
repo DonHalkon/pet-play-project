@@ -1,0 +1,17 @@
+@import forms.UserForm._
+
+@(userForm: Form[UserData], postUrl: Call)(implicit request: MessagesRequestHeader)
+
+@main("Hello") {
+
+  @request.cookies.get("userName").get.value match {
+    case "" => {}
+    case userName => {<div>Hello @userName</div>}
+  }
+
+  @helper.form(postUrl) {
+    @helper.CSRF.formField
+    @helper.inputText(userForm("name"))
+    <button>Submit user name</button>
+  }
+}

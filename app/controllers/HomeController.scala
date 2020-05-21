@@ -4,25 +4,33 @@ import javax.inject._
 import play.api._
 import play.api.mvc._
 
-/**
- * This controller creates an `Action` to handle HTTP requests to the
- * application's home page.
- */
 @Singleton
-class HomeController @Inject()(val controllerComponents: ControllerComponents) extends BaseController {
+class HomeController @Inject()(val cc: MessagesControllerComponents) extends MessagesAbstractController(cc) {
 
-  /**
-   * Create an Action to render an HTML page.
-   *
-   * The configuration in the `routes` file means that this method
-   * will be called when the application receives a `GET` request with
-   * a path of `/`.
-   */
+  import forms.UserForm._
+
+  private val postUrl = routes.HomeController.user()
+
   def index() = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.index())
   }
 
   def hello(name: String) = Action {
     Ok(views.html.hello(name))
+  }
+
+  def helloUser() = Action { implicit request: MessagesRequest[AnyContent] =>
+    Ok(views.html.user(userForm, postUrl))
+  }
+
+  def user() = Action { implicit request: MessagesRequest[AnyContent] =>
+    userForm.bindFromRequest.fold(
+      formWithErrors => {
+        BadRequest(views.html.user(formWithErrors, postUrl))
+      },
+      userData => {
+        Redirect(routes.HomeController.helloUser()).withCookies(new Cookie("userName", userData.name))
+      }
+    )
   }
 }
