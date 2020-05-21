@@ -11,11 +11,11 @@ class HomeController @Inject()(val cc: MessagesControllerComponents) extends Mes
 
   private val postUrl = routes.HomeController.user()
 
-  def index() = Action { implicit request: Request[AnyContent] =>
+  def index() = Action { implicit request: MessagesRequest[AnyContent] =>
     Ok(views.html.index())
   }
 
-  def hello(name: String) = Action {
+  def hello(name: String) = Action { implicit request: MessagesRequest[AnyContent] =>
     Ok(views.html.hello(name))
   }
 
@@ -29,8 +29,12 @@ class HomeController @Inject()(val cc: MessagesControllerComponents) extends Mes
         BadRequest(views.html.user(formWithErrors, postUrl))
       },
       userData => {
-        Redirect(routes.HomeController.helloUser()).withCookies(new Cookie("userName", userData.name))
+        Redirect(routes.HomeController.index()).withCookies(new Cookie("userName", userData.name))
       }
     )
+  }
+
+  def logout() = Action {  implicit request: MessagesRequest[AnyContent] =>
+    Redirect(routes.HomeController.index()).discardingCookies(DiscardingCookie("userName"))
   }
 }
